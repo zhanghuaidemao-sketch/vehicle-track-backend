@@ -137,6 +137,10 @@ to{
 transform:translateY(110vh) rotate(360deg);
 }
 }
+
+.online{color:#00ff88;}
+.offline{color:#ff4444;}
+.warning{color:#ffaa00;}
 </style>
 </head>
 
@@ -197,8 +201,9 @@ setTimeout(()=>{s.remove()},10000);
 }
 setInterval(createSakura,300);
 
-/* 终极稳定查询方式 */
-function search(){
+
+/* ✅ 使用 ovo 官方 agency 代理 */
+async function search(){
 let plate=document.getElementById("car").value.trim();
 let result=document.getElementById("result");
 
@@ -207,22 +212,46 @@ result.innerHTML="请输入车牌号";
 return;
 }
 
-result.innerHTML="正在查询...";
+result.innerHTML="查询中...";
 
-/* 直接用 iframe 打开接口 */
-let iframe=document.createElement("iframe");
-iframe.style.display="none";
-iframe.src="https://ovo1.cc/api/car.php?plate="+encodeURIComponent(plate);
-
-document.body.appendChild(iframe);
-
-iframe.onload=function(){
 try{
-let text=iframe.contentDocument.body.innerText;
-result.innerHTML=text;
-}catch(e){
-result.innerHTML="接口返回成功，但浏览器限制读取。请直接点击下方链接查看：<br><a href='"+iframe.src+"' target='_blank'>点我查看接口结果</a>";
+
+let apiUrl="https://ovo1.cc/api/car.php?plate="+encodeURIComponent(plate);
+
+/* 通过 agency 代理 */
+let proxyUrl="https://ovo1.cc/api/agency.php?url="+encodeURIComponent(apiUrl);
+
+let response=await fetch(proxyUrl);
+let text=await response.text();
+
+/* 有些代理会多包一层字符串，这里做安全解析 */
+let data;
+try{
+data=JSON.parse(text);
+}catch{
+data=JSON.parse(JSON.parse(text));
 }
+
+if(data.code==200){
+
+let status=data.status||"未知";
+let className="warning";
+if(status=="在线") className="online";
+if(status=="离线") className="offline";
+
+result.innerHTML=`
+<div>车牌号：${plate}</div>
+<div>状态：<span class="${className}">${status}</span></div>
+<div>查询时间：${new Date().toLocaleString()}</div>
+`;
+
+}else{
+result.innerHTML="查询失败："+(data.msg||"无数据");
+}
+
+}catch(e){
+result.innerHTML="接口访问失败";
+console.error(e);
 }
 
 }
