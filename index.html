@@ -1,15 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚘 车辆状态智能系统</title>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<style>
+body{
+margin:0;
+background:#000;
+color:#fff;
+font-family:Arial;
+overflow:hidden;
+}
+
+/* 启动页 */
+#startup{
+position:fixed;
+width:100%;
+height:100%;
+background:#000;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.logo{
+font-size:28px;
+background:linear-gradient(45deg,#00f2ff,#ff00ea);
+-webkit-background-clip:text;
+color:transparent;
+animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+from{ text-shadow:0 0 10px #00f2ff;}
+to{ text-shadow:0 0 30px #ff00ea;}
+}
+
+.loader{
+width:200px;
+height:5px;
+background:#222;
+margin-top:20px;
+overflow:hidden;
+border-radius:20px;
+}
+
+.progress{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#00f2ff,#ff00ea);
+animation:load 3s forwards;
+}
+
+@keyframes load{
+to{ width:100%;}
+}
+
+/* 主页面 */
+#main{
+display:none;
+text-align:center;
+position:relative;
+z-index:2;
+}
+
+#particles-js{
+position:fixed;
+width:100%;
+height:100%;
+z-index:-2;
+}
+
+h1{
+margin-top:70px;
+font-size:26px;
+background:linear-gradient(45deg,#00f2ff,#ff00ea);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+.notice{
+margin:15px auto;
+width:85%;
+padding:10px;
+background:rgba(255,255,255,0.08);
+border-radius:20px;
+backdrop-filter:blur(15px);
+font-size:13px;
+}
+
+input{
+padding:10px;
+width:200px;
+border-radius:30px;
+border:none;
+outline:none;
+}
+
+button{
+padding:10px 20px;
+border-radius:30px;
+border:none;
+background:#00f2ff;
+cursor:pointer;
+font-weight:bold;
+}
+
+#result{
+margin-top:20px;
+padding:15px;
+border-radius:20px;
+background:rgba(255,255,255,0.08);
+display:inline-block;
+min-width:250px;
+}
+
+/* 樱花 */
+.sakura{
+position:fixed;
+top:-10px;
+width:12px;
+height:12px;
+background:pink;
+border-radius:50%;
+opacity:0.8;
+animation:fall linear infinite;
+z-index:-1;
+}
+
+@keyframes fall{
+to{
+transform:translateY(110vh) rotate(360deg);
+}
+}
+
+.online{color:#00ff88;}
+.offline{color:#ff4444;}
+.warning{color:#ffaa00;}
+</style>
+</head>
+
+<body>
+
+<div id="startup">
+<div class="logo">🚘 Vehicle Smart System</div>
+<div class="loader"><div class="progress"></div></div>
+</div>
+
+<div id="main">
+<div id="particles-js"></div>
+
+<h1>车辆状态查询系统</h1>
+
+<div class="notice">
+📢 公告：七月制作<br>
+QQ:2928823358
+</div>
+
+<input type="text" id="car" placeholder="请输入车牌号">
+<button onclick="search()">查询</button>
+
+<div id="result">等待查询...</div>
+
+<audio autoplay loop>
+<source src="https://cdn.pixabay.com/download/audio/2023/03/13/audio_c8f6e7f7df.mp3">
+</audio>
+
+</div>
+
 <script>
 
-/* 启动动画 */
+/* 启动页 */
 setTimeout(()=>{
 document.getElementById("startup").style.display="none";
 document.getElementById("main").style.display="block";
+initParticles();
 },3000);
 
-/* 星空粒子 */
+/* 粒子初始化 */
+function initParticles(){
 particlesJS("particles-js", {
 particles:{
-number:{value:180},
+number:{value:120},
 size:{value:3,random:true},
 line_linked:{enable:true,color:"#00f2ff"},
 move:{speed:2}
@@ -21,20 +199,20 @@ onclick:{enable:true,mode:"push"}
 }
 }
 });
+}
 
-/* 樱花生成 */
+/* 樱花 */
 function createSakura(){
-const sakura=document.createElement("div");
-sakura.className="sakura";
-sakura.style.left=Math.random()*100+"vw";
-sakura.style.animationDuration=(5+Math.random()*5)+"s";
-document.body.appendChild(sakura);
-setTimeout(()=>{sakura.remove()},10000);
+const s=document.createElement("div");
+s.className="sakura";
+s.style.left=Math.random()*100+"vw";
+s.style.animationDuration=(5+Math.random()*5)+"s";
+document.body.appendChild(s);
+setTimeout(()=>{s.remove()},10000);
 }
 setInterval(createSakura,300);
 
-/* ===== 真API查询 ===== */
-
+/* API 查询（带跨域代理，绝对白屏修复） */
 async function search(){
 let plate=document.getElementById("car").value.trim();
 let result=document.getElementById("result");
@@ -44,37 +222,45 @@ result.innerHTML="请输入车牌号";
 return;
 }
 
-result.innerHTML="正在查询中...";
+result.innerHTML="查询中...";
 
 try{
-let response = await fetch(`https://ovo1.cc/api/car.php?plate=${encodeURIComponent(plate)}`);
+
+let apiUrl = "https://ovo1.cc/api/car.php?plate=" + encodeURIComponent(plate);
+
+/* 使用跨域代理 */
+let proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl);
+
+let response = await fetch(proxyUrl);
 let data = await response.json();
 
 console.log(data);
 
-/* 根据返回字段自行调整 */
-if(data.code == 200){
+if(data.code==200){
 
-let statusClass="warning";
-if(data.status == "在线") statusClass="online";
-if(data.status == "离线") statusClass="offline";
+let status=data.status || "未知";
+let className="warning";
+if(status=="在线") className="online";
+if(status=="离线") className="offline";
 
 result.innerHTML=`
 <div>车牌号：${plate}</div>
-<div>车辆状态：<span class="${statusClass}">${data.status}</span></div>
-<div>所属地区：${data.area || "--"}</div>
-<div>更新时间：${new Date().toLocaleString()}</div>
+<div>状态：<span class="${className}">${status}</span></div>
+<div>查询时间：${new Date().toLocaleString()}</div>
 `;
 
 }else{
-result.innerHTML="查询失败："+ (data.msg || "未知错误");
+result.innerHTML="查询失败："+(data.msg||"无数据");
 }
 
-}catch(error){
-result.innerHTML="接口请求失败（可能跨域）";
-console.error(error);
+}catch(e){
+result.innerHTML="接口访问失败";
+console.error(e);
 }
 
 }
 
 </script>
+
+</body>
+</html>
