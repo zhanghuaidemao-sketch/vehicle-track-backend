@@ -2,13 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>终极登山赛车</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>登山赛车 - iPhone版</title>
 <style>
 body{
 margin:0;
 overflow:hidden;
 background:linear-gradient(#87CEEB,#ffffff);
-font-family:Arial;
+font-family:-apple-system;
+touch-action:none;
 }
 canvas{display:block;}
 #ui{
@@ -17,21 +19,20 @@ top:10px;
 left:10px;
 color:#000;
 font-weight:bold;
-font-size:18px;
+font-size:16px;
 }
 .btn{
 position:fixed;
-bottom:20px;
+bottom:30px;
 width:80px;
 height:80px;
 background:rgba(0,0,0,0.5);
 color:#fff;
-font-size:30px;
+font-size:28px;
 border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
-user-select:none;
 }
 #left{left:20px;}
 #right{right:20px;}
@@ -41,9 +42,8 @@ top:10px;
 right:10px;
 background:#000;
 color:#fff;
-padding:8px 15px;
+padding:6px 14px;
 border-radius:20px;
-cursor:pointer;
 }
 </style>
 </head>
@@ -53,7 +53,7 @@ cursor:pointer;
 <div id="ui"></div>
 <div id="left" class="btn">◀</div>
 <div id="right" class="btn">▶</div>
-<div id="music">音乐: 开</div>
+<div id="music">音乐: 关</div>
 
 <audio id="bgm" loop>
 <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
@@ -61,4 +61,109 @@ cursor:pointer;
 
 <script>
 const canvas=document.getElementById("game");
-const ctx=canvas.getContext
+const ctx=canvas.getContext("2d");
+
+function resize(){
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+}
+resize();
+window.addEventListener("resize",resize);
+
+let gravity=0.6;
+let fuel=100;
+let distance=0;
+let best=localStorage.getItem("bestScore")||0;
+
+let car={
+x:150,
+y:0,
+width:70,
+height:35,
+speed:0,
+vy:0
+};
+
+let keys={};
+
+document.getElementById("left").ontouchstart=()=>keys.left=true;
+document.getElementById("left").ontouchend=()=>keys.left=false;
+document.getElementById("right").ontouchstart=()=>keys.right=true;
+document.getElementById("right").ontouchend=()=>keys.right=false;
+
+let bgm=document.getElementById("bgm");
+bgm.volume=0.4;
+
+document.getElementById("music").onclick=function(){
+if(bgm.paused){
+bgm.play();
+this.innerText="音乐: 开";
+}else{
+bgm.pause();
+this.innerText="音乐: 关";
+}
+};
+
+function ground(x){
+return canvas.height-120-Math.sin((x+distance)/100)*60;
+}
+
+function update(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+if(keys.right && fuel>0){
+car.speed+=0.2;
+fuel-=0.1;
+}
+if(keys.left){
+car.speed-=0.1;
+}
+
+car.speed*=0.98;
+car.vy+=gravity;
+distance+=car.speed;
+
+let gy=ground(car.x);
+if(car.y+car.height>gy){
+car.y=gy-car.height;
+car.vy=0;
+}else{
+car.y+=car.vy;
+}
+
+ctx.beginPath();
+ctx.moveTo(0,canvas.height);
+for(let i=0;i<canvas.width;i++){
+ctx.lineTo(i,ground(i));
+}
+ctx.lineTo(canvas.width,canvas.height);
+ctx.fillStyle="#654321";
+ctx.fill();
+
+ctx.fillStyle="red";
+ctx.fillRect(car.x,car.y,car.width,car.height);
+
+document.getElementById("ui").innerText=
+"距离: "+Math.floor(distance/10)+
+" | 油量: "+Math.floor(fuel)+
+" | 最高: "+best;
+
+if(distance/10>best){
+best=Math.floor(distance/10);
+localStorage.setItem("bestScore",best);
+}
+
+if(fuel<=0){
+alert("没油了！");
+location.reload();
+}
+
+requestAnimationFrame(update);
+}
+
+car.y=ground(car.x)-car.height;
+update();
+</script>
+
+</body>
+</html>
