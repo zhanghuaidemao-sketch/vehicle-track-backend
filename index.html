@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>🚗 Vehicle Track System</title>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<style>
+body{
+margin:0;
+background:#000;
+color:#fff;
+font-family:Arial;
+overflow:hidden;
+text-align:center;
+}
+
+#particles-js{
+position:fixed;
+width:100%;
+height:100%;
+z-index:-1;
+}
+
+h1{
+margin-top:60px;
+font-size:40px;
+background:linear-gradient(45deg,#00f2ff,#ff00ea);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+.notice{
+margin:20px auto;
+width:60%;
+padding:10px;
+background:rgba(255,255,255,0.1);
+border-radius:20px;
+backdrop-filter:blur(10px);
+}
+
+input{
+padding:10px;
+width:250px;
+border-radius:20px;
+border:none;
+outline:none;
+}
+
+button{
+padding:10px 20px;
+border-radius:20px;
+border:none;
+background:#00f2ff;
+cursor:pointer;
+}
+
+#result{
+margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="particles-js"></div>
+
+<h1>🚘 车辆轨迹查询系统</h1>
+
+<div class="notice">
+📢 公告：七月帮我部署到GitHub弄成网站
+</div>
+
+<input type="text" id="car" placeholder="输入车牌号">
+<button onclick="search()">查询</button>
+
+<div id="result"></div>
+
+<audio autoplay loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6f1b5f38d8.mp3?filename=ambient-110624.mp3">
+</audio>
+
+<script>
+particlesJS("particles-js", {
+particles:{
+number:{value:80},
+size:{value:
