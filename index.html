@@ -1,262 +1,64 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚘 车辆状态智能系统</title>
-
-<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
-
+<title>终极登山赛车</title>
 <style>
 body{
 margin:0;
+overflow:hidden;
+background:linear-gradient(#87CEEB,#ffffff);
+font-family:Arial;
+}
+canvas{display:block;}
+#ui{
+position:fixed;
+top:10px;
+left:10px;
+color:#000;
+font-weight:bold;
+font-size:18px;
+}
+.btn{
+position:fixed;
+bottom:20px;
+width:80px;
+height:80px;
+background:rgba(0,0,0,0.5);
+color:#fff;
+font-size:30px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+user-select:none;
+}
+#left{left:20px;}
+#right{right:20px;}
+#music{
+position:fixed;
+top:10px;
+right:10px;
 background:#000;
 color:#fff;
-font-family:Arial;
-overflow:hidden;
-}
-
-#startup{
-position:fixed;
-width:100%;
-height:100%;
-background:#000;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-z-index:9999;
-}
-
-.logo{
-font-size:28px;
-background:linear-gradient(45deg,#00f2ff,#ff00ea);
--webkit-background-clip:text;
-color:transparent;
-animation:glow 2s infinite alternate;
-}
-
-@keyframes glow{
-from{ text-shadow:0 0 10px #00f2ff;}
-to{ text-shadow:0 0 30px #ff00ea;}
-}
-
-.loader{
-width:200px;
-height:5px;
-background:#222;
-margin-top:20px;
-overflow:hidden;
+padding:8px 15px;
 border-radius:20px;
-}
-
-.progress{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#00f2ff,#ff00ea);
-animation:load 3s forwards;
-}
-
-@keyframes load{
-to{ width:100%;}
-}
-
-#main{
-display:none;
-text-align:center;
-position:relative;
-z-index:2;
-}
-
-#particles-js{
-position:fixed;
-width:100%;
-height:100%;
-z-index:-2;
-}
-
-h1{
-margin-top:70px;
-font-size:26px;
-background:linear-gradient(45deg,#00f2ff,#ff00ea);
--webkit-background-clip:text;
-color:transparent;
-}
-
-.notice{
-margin:15px auto;
-width:85%;
-padding:10px;
-background:rgba(255,255,255,0.08);
-border-radius:20px;
-backdrop-filter:blur(15px);
-font-size:13px;
-}
-
-input{
-padding:10px;
-width:200px;
-border-radius:30px;
-border:none;
-outline:none;
-}
-
-button{
-padding:10px 20px;
-border-radius:30px;
-border:none;
-background:#00f2ff;
 cursor:pointer;
-font-weight:bold;
 }
-
-#result{
-margin-top:20px;
-padding:15px;
-border-radius:20px;
-background:rgba(255,255,255,0.08);
-display:inline-block;
-min-width:250px;
-white-space:pre-wrap;
-}
-
-.sakura{
-position:fixed;
-top:-10px;
-width:12px;
-height:12px;
-background:pink;
-border-radius:50%;
-opacity:0.8;
-animation:fall linear infinite;
-z-index:-1;
-}
-
-@keyframes fall{
-to{
-transform:translateY(110vh) rotate(360deg);
-}
-}
-
-.online{color:#00ff88;}
-.offline{color:#ff4444;}
-.warning{color:#ffaa00;}
 </style>
 </head>
-
 <body>
 
-<div id="startup">
-<div class="logo">🚘 Vehicle Smart System</div>
-<div class="loader"><div class="progress"></div></div>
-</div>
+<canvas id="game"></canvas>
+<div id="ui"></div>
+<div id="left" class="btn">◀</div>
+<div id="right" class="btn">▶</div>
+<div id="music">音乐: 开</div>
 
-<div id="main">
-<div id="particles-js"></div>
-
-<h1>车辆状态查询系统</h1>
-
-<div class="notice">
-📢 公告：七月制作<br>
-QQ:2928823358
-</div>
-
-<input type="text" id="car" placeholder="请输入车牌号">
-<button onclick="search()">查询</button>
-
-<div id="result">等待查询...</div>
-
-<audio autoplay loop>
-<source src="https://cdn.pixabay.com/download/audio/2023/03/13/audio_c8f6e7f7df.mp3">
+<audio id="bgm" loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
 </audio>
 
-</div>
-
 <script>
-
-setTimeout(()=>{
-document.getElementById("startup").style.display="none";
-document.getElementById("main").style.display="block";
-initParticles();
-},3000);
-
-function initParticles(){
-particlesJS("particles-js", {
-particles:{
-number:{value:120},
-size:{value:3,random:true},
-line_linked:{enable:true,color:"#00f2ff"},
-move:{speed:2}
-}
-});
-}
-
-function createSakura(){
-const s=document.createElement("div");
-s.className="sakura";
-s.style.left=Math.random()*100+"vw";
-s.style.animationDuration=(5+Math.random()*5)+"s";
-document.body.appendChild(s);
-setTimeout(()=>{s.remove()},10000);
-}
-setInterval(createSakura,300);
-
-
-/* ✅ 使用 ovo 官方 agency 代理 */
-async function search(){
-let plate=document.getElementById("car").value.trim();
-let result=document.getElementById("result");
-
-if(!plate){
-result.innerHTML="请输入车牌号";
-return;
-}
-
-result.innerHTML="查询中...";
-
-try{
-
-let apiUrl="https://ovo1.cc/api/car.php?plate="+encodeURIComponent(plate);
-
-/* 通过 agency 代理 */
-let proxyUrl="https://ovo1.cc/api/agency.php?url="+encodeURIComponent(apiUrl);
-
-let response=await fetch(proxyUrl);
-let text=await response.text();
-
-/* 有些代理会多包一层字符串，这里做安全解析 */
-let data;
-try{
-data=JSON.parse(text);
-}catch{
-data=JSON.parse(JSON.parse(text));
-}
-
-if(data.code==200){
-
-let status=data.status||"未知";
-let className="warning";
-if(status=="在线") className="online";
-if(status=="离线") className="offline";
-
-result.innerHTML=`
-<div>车牌号：${plate}</div>
-<div>状态：<span class="${className}">${status}</span></div>
-<div>查询时间：${new Date().toLocaleString()}</div>
-`;
-
-}else{
-result.innerHTML="查询失败："+(data.msg||"无数据");
-}
-
-}catch(e){
-result.innerHTML="接口访问失败";
-console.error(e);
-}
-
-}
-
-</script>
-
-</body>
-</html>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext
