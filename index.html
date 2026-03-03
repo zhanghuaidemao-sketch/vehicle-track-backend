@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>🚗 Vehicle Track System</title>
+<title>🚗 车辆状态查询系统</title>
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
 
@@ -16,6 +16,7 @@ overflow:hidden;
 text-align:center;
 }
 
+/* 粒子层 */
 #particles-js{
 position:fixed;
 width:100%;
@@ -23,41 +24,83 @@ height:100%;
 z-index:-1;
 }
 
+/* 标题 */
 h1{
 margin-top:60px;
-font-size:40px;
+font-size:42px;
 background:linear-gradient(45deg,#00f2ff,#ff00ea);
 -webkit-background-clip:text;
 color:transparent;
+animation:glow 2s infinite alternate;
 }
 
+@keyframes glow{
+from{ text-shadow:0 0 10px #00f2ff; }
+to{ text-shadow:0 0 30px #ff00ea; }
+}
+
+/* 公告 */
 .notice{
 margin:20px auto;
 width:60%;
-padding:10px;
+padding:12px;
 background:rgba(255,255,255,0.1);
 border-radius:20px;
-backdrop-filter:blur(10px);
+backdrop-filter:blur(15px);
+font-size:14px;
 }
 
+/* 输入框 */
 input{
-padding:10px;
-width:250px;
-border-radius:20px;
+padding:12px;
+width:260px;
+border-radius:30px;
 border:none;
 outline:none;
 }
 
+/* 按钮 */
 button{
-padding:10px 20px;
-border-radius:20px;
+padding:12px 25px;
+border-radius:30px;
 border:none;
 background:#00f2ff;
 cursor:pointer;
+font-weight:bold;
+transition:0.3s;
 }
 
+button:hover{
+background:#ff00ea;
+transform:scale(1.1);
+box-shadow:0 0 20px #ff00ea;
+}
+
+/* 结果卡片 */
 #result{
-margin-top:20px;
+margin-top:30px;
+display:inline-block;
+padding:20px 40px;
+border-radius:20px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+font-size:18px;
+min-width:300px;
+}
+
+.status-online{
+color:#00ff88;
+font-weight:bold;
+}
+
+.status-offline{
+color:#ff4444;
+font-weight:bold;
+}
+
+.status-warning{
+color:#ffaa00;
+font-weight:bold;
 }
 </style>
 </head>
@@ -66,24 +109,111 @@ margin-top:20px;
 
 <div id="particles-js"></div>
 
-<h1>🚘 车辆轨迹查询系统</h1>
+<h1>🚘 车辆状态智能查询系统</h1>
 
 <div class="notice">
-📢 公告：七月制作
+📢 公告：七月制作<br>
 QQ:2928823358
 </div>
 
-<input type="text" id="car" placeholder="输入车牌号">
-<button onclick="search()">查询</button>
+<input type="text" id="car" placeholder="请输入车牌号">
+<button onclick="search()">查询状态</button>
 
-<div id="result"></div>
+<div id="result">等待查询...</div>
 
+<!-- 樱花树下氛围音乐 -->
 <audio autoplay loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6f1b5f38d8.mp3?filename=ambient-110624.mp3">
+<source src="https://cdn.pixabay.com/download/audio/2023/03/13/audio_c8f6e7f7df.mp3">
 </audio>
 
 <script>
+/* 高级粒子效果 */
 particlesJS("particles-js", {
 particles:{
-number:{value:80},
-size:{value:
+number:{value:120},
+size:{value:3,random:true},
+color:{value:"#ffffff"},
+line_linked:{
+enable:true,
+distance:150,
+color:"#00f2ff",
+opacity:0.4,
+width:1
+},
+move:{
+enable:true,
+speed:3,
+direction:"none",
+out_mode:"out"
+}
+},
+interactivity:{
+detect_on:"canvas",
+events:{
+onhover:{enable:true,mode:"repulse"},
+onclick:{enable:true,mode:"push"}
+},
+modes:{
+repulse:{distance:100},
+push:{particles_nb:5}
+}
+}
+});
+
+/* 本地模拟数据（如果API失败会用这个） */
+const localData={
+"京A12345":{status:"在线",speed:"60km/h"},
+"沪B88888":{status:"离线",speed:"0km/h"},
+"粤C66666":{status:"异常",speed:"--"}
+};
+
+/* 查询函数 */
+function search(){
+let car=document.getElementById("car").value.trim();
+let result=document.getElementById("result");
+
+if(!car){
+result.innerHTML="请输入车牌号";
+return;
+}
+
+/* ===== API对接区域 ===== */
+fetch("https://你的API地址/vehicle/status?plate="+car)
+.then(res=>res.json())
+.then(data=>{
+showResult(data);
+})
+.catch(()=>{
+/* 如果API不可用使用本地数据 */
+if(localData[car]){
+showResult(localData[car]);
+}else{
+result.innerHTML="未查询到该车辆信息";
+}
+});
+}
+
+/* 展示结果 */
+function showResult(data){
+let result=document.getElementById("result");
+
+let statusClass="";
+
+if(data.status=="在线"){
+statusClass="status-online";
+}else if(data.status=="离线"){
+statusClass="status-offline";
+}else{
+statusClass="status-warning";
+}
+
+result.innerHTML=`
+<div>车辆状态：<span class="${statusClass}">${data.status}</span></div>
+<div>当前速度：${data.speed}</div>
+<div>更新时间：${new Date().toLocaleString()}</div>
+`;
+}
+</script>
+
+</body>
+</html>
