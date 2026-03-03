@@ -3,16 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>登山赛车 - iPhone版</title>
+<title>尝利利登山赛车</title>
+
 <style>
 body{
 margin:0;
 overflow:hidden;
-background:linear-gradient(#87CEEB,#ffffff);
+background:linear-gradient(#ffddee,#ffeef8);
 font-family:-apple-system;
 touch-action:none;
 }
 canvas{display:block;}
+
 #ui{
 position:fixed;
 top:10px;
@@ -21,12 +23,22 @@ color:#000;
 font-weight:bold;
 font-size:16px;
 }
+
+#notice{
+position:fixed;
+top:40px;
+left:10px;
+color:#ff1493;
+font-weight:bold;
+font-size:14px;
+}
+
 .btn{
 position:fixed;
 bottom:30px;
 width:80px;
 height:80px;
-background:rgba(0,0,0,0.5);
+background:rgba(255,105,180,0.6);
 color:#fff;
 font-size:28px;
 border-radius:50%;
@@ -34,13 +46,15 @@ display:flex;
 align-items:center;
 justify-content:center;
 }
+
 #left{left:20px;}
 #right{right:20px;}
+
 #music{
 position:fixed;
 top:10px;
 right:10px;
-background:#000;
+background:#ff69b4;
 color:#fff;
 padding:6px 14px;
 border-radius:20px;
@@ -50,13 +64,16 @@ border-radius:20px;
 <body>
 
 <canvas id="game"></canvas>
+
 <div id="ui"></div>
+<div id="notice">📢 利利制作</div>
+
 <div id="left" class="btn">◀</div>
 <div id="right" class="btn">▶</div>
 <div id="music">音乐: 关</div>
 
 <audio id="bgm" loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
+<source src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_6c3fbd0a77.mp3">
 </audio>
 
 <script>
@@ -78,8 +95,8 @@ let best=localStorage.getItem("bestScore")||0;
 let car={
 x:150,
 y:0,
-width:70,
-height:35,
+width:90,
+height:40,
 speed:0,
 vy:0
 };
@@ -108,8 +125,21 @@ function ground(x){
 return canvas.height-120-Math.sin((x+distance)/100)*60;
 }
 
+function drawSakura(){
+for(let i=0;i<20;i++){
+ctx.fillStyle="rgba(255,182,193,0.4)";
+ctx.beginPath();
+ctx.arc(Math.random()*canvas.width,
+Math.random()*canvas.height/2,
+Math.random()*4+2,0,Math.PI*2);
+ctx.fill();
+}
+}
+
 function update(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
+
+drawSakura();
 
 if(keys.right && fuel>0){
 car.speed+=0.2;
@@ -137,11 +167,15 @@ for(let i=0;i<canvas.width;i++){
 ctx.lineTo(i,ground(i));
 }
 ctx.lineTo(canvas.width,canvas.height);
-ctx.fillStyle="#654321";
+ctx.fillStyle="#8B4513";
 ctx.fill();
 
-ctx.fillStyle="red";
+ctx.fillStyle="#ff69b4";
 ctx.fillRect(car.x,car.y,car.width,car.height);
+
+ctx.fillStyle="#fff";
+ctx.font="16px Arial";
+ctx.fillText("尝利利",car.x+10,car.y+25);
 
 document.getElementById("ui").innerText=
 "距离: "+Math.floor(distance/10)+
@@ -154,7 +188,7 @@ localStorage.setItem("bestScore",best);
 }
 
 if(fuel<=0){
-alert("没油了！");
+alert("尝利利没油啦！");
 location.reload();
 }
 
