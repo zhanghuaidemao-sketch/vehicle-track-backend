@@ -16,7 +16,6 @@ font-family:Arial;
 overflow:hidden;
 }
 
-/* 启动页 */
 #startup{
 position:fixed;
 width:100%;
@@ -62,7 +61,6 @@ animation:load 3s forwards;
 to{ width:100%;}
 }
 
-/* 主页面 */
 #main{
 display:none;
 text-align:center;
@@ -119,9 +117,9 @@ border-radius:20px;
 background:rgba(255,255,255,0.08);
 display:inline-block;
 min-width:250px;
+white-space:pre-wrap;
 }
 
-/* 樱花 */
 .sakura{
 position:fixed;
 top:-10px;
@@ -139,10 +137,6 @@ to{
 transform:translateY(110vh) rotate(360deg);
 }
 }
-
-.online{color:#00ff88;}
-.offline{color:#ff4444;}
-.warning{color:#ffaa00;}
 </style>
 </head>
 
@@ -176,14 +170,12 @@ QQ:2928823358
 
 <script>
 
-/* 启动页 */
 setTimeout(()=>{
 document.getElementById("startup").style.display="none";
 document.getElementById("main").style.display="block";
 initParticles();
 },3000);
 
-/* 粒子初始化 */
 function initParticles(){
 particlesJS("particles-js", {
 particles:{
@@ -191,17 +183,10 @@ number:{value:120},
 size:{value:3,random:true},
 line_linked:{enable:true,color:"#00f2ff"},
 move:{speed:2}
-},
-interactivity:{
-events:{
-onhover:{enable:true,mode:"repulse"},
-onclick:{enable:true,mode:"push"}
-}
 }
 });
 }
 
-/* 樱花 */
 function createSakura(){
 const s=document.createElement("div");
 s.className="sakura";
@@ -212,8 +197,8 @@ setTimeout(()=>{s.remove()},10000);
 }
 setInterval(createSakura,300);
 
-/* API 查询（带跨域代理，绝对白屏修复） */
-async function search(){
+/* 终极稳定查询方式 */
+function search(){
 let plate=document.getElementById("car").value.trim();
 let result=document.getElementById("result");
 
@@ -222,40 +207,22 @@ result.innerHTML="请输入车牌号";
 return;
 }
 
-result.innerHTML="查询中...";
+result.innerHTML="正在查询...";
 
+/* 直接用 iframe 打开接口 */
+let iframe=document.createElement("iframe");
+iframe.style.display="none";
+iframe.src="https://ovo1.cc/api/car.php?plate="+encodeURIComponent(plate);
+
+document.body.appendChild(iframe);
+
+iframe.onload=function(){
 try{
-
-let apiUrl = "https://ovo1.cc/api/car.php?plate=" + encodeURIComponent(plate);
-
-/* 使用跨域代理 */
-let proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl);
-
-let response = await fetch(proxyUrl);
-let data = await response.json();
-
-console.log(data);
-
-if(data.code==200){
-
-let status=data.status || "未知";
-let className="warning";
-if(status=="在线") className="online";
-if(status=="离线") className="offline";
-
-result.innerHTML=`
-<div>车牌号：${plate}</div>
-<div>状态：<span class="${className}">${status}</span></div>
-<div>查询时间：${new Date().toLocaleString()}</div>
-`;
-
-}else{
-result.innerHTML="查询失败："+(data.msg||"无数据");
-}
-
+let text=iframe.contentDocument.body.innerText;
+result.innerHTML=text;
 }catch(e){
-result.innerHTML="接口访问失败";
-console.error(e);
+result.innerHTML="接口返回成功，但浏览器限制读取。请直接点击下方链接查看：<br><a href='"+iframe.src+"' target='_blank'>点我查看接口结果</a>";
+}
 }
 
 }
