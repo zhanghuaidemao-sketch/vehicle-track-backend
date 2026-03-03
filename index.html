@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚘 车辆状态智能系统</title>
+<title>🚘 Vehicle Smart System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
 
@@ -66,13 +66,15 @@ to{ width:100%;}
 #main{
 display:none;
 text-align:center;
+position:relative;
+z-index:2;
 }
 
 #particles-js{
 position:fixed;
 width:100%;
 height:100%;
-z-index:-1;
+z-index:-2;
 }
 
 h1{
@@ -128,6 +130,25 @@ font-size:18px;
 min-width:280px;
 }
 
+/* ===== 樱花飘落 ===== */
+.sakura{
+position:fixed;
+top:-10px;
+width:15px;
+height:15px;
+background:pink;
+border-radius:50%;
+opacity:0.8;
+animation:fall linear infinite;
+z-index:-1;
+}
+
+@keyframes fall{
+to{
+transform:translateY(110vh) rotate(360deg);
+}
+}
+
 .online{color:#00ff88;font-weight:bold;}
 .offline{color:#ff4444;font-weight:bold;}
 .warning{color:#ffaa00;font-weight:bold;}
@@ -139,9 +160,7 @@ min-width:280px;
 <!-- 启动页 -->
 <div id="startup">
 <div class="logo">🚘 Vehicle Smart System</div>
-<div class="loader">
-<div class="progress"></div>
-</div>
+<div class="loader"><div class="progress"></div></div>
 </div>
 
 <!-- 主页面 -->
@@ -160,27 +179,27 @@ QQ:2928823358
 
 <div id="result">等待查询...</div>
 
-<!-- 樱花树下氛围音乐 -->
-<audio id="bgm" autoplay loop>
+<audio autoplay loop>
 <source src="https://cdn.pixabay.com/download/audio/2023/03/13/audio_c8f6e7f7df.mp3">
 </audio>
 
 </div>
 
 <script>
-/* 启动页3秒后进入主界面 */
+
+/* 启动动画 */
 setTimeout(()=>{
 document.getElementById("startup").style.display="none";
 document.getElementById("main").style.display="block";
 },3000);
 
-/* 粒子特效 */
+/* 星空粒子 */
 particlesJS("particles-js", {
 particles:{
-number:{value:140},
+number:{value:180},
 size:{value:3,random:true},
 line_linked:{enable:true,color:"#00f2ff"},
-move:{speed:3}
+move:{speed:2}
 },
 interactivity:{
 events:{
@@ -189,6 +208,17 @@ onclick:{enable:true,mode:"push"}
 }
 }
 });
+
+/* 樱花生成 */
+function createSakura(){
+const sakura=document.createElement("div");
+sakura.className="sakura";
+sakura.style.left=Math.random()*100+"vw";
+sakura.style.animationDuration=(5+Math.random()*5)+"s";
+document.body.appendChild(sakura);
+setTimeout(()=>{sakura.remove()},10000);
+}
+setInterval(createSakura,300);
 
 /* 模拟数据 */
 const data={
